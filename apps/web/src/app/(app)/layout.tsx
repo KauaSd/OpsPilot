@@ -1,17 +1,20 @@
 import { Sidebar } from "@/components/layout/Sidebar";
 import { Header } from "@/components/layout/Header";
+import { getServerUser } from "@/lib/api/server-user";
 
-export default function AppLayout({
+export default async function AppLayout({
   children,
 }: {
   children: React.ReactNode;
 }) {
+  const user = await getServerUser();
+
   return (
     <div className="min-h-screen bg-surface-container-low">
-      <Sidebar className="hidden md:flex" />
+      <Sidebar user={user} className="hidden md:flex" />
 
       <div className="md:pl-64">
-        <Header />
+        <Header user={user} />
         <main
           id="main-content"
           tabIndex={-1}
