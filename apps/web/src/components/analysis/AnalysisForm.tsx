@@ -6,7 +6,6 @@ import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import {
   Sparkles,
-  Zap,
   RotateCcw,
   Mail,
   MessageSquare,
@@ -196,12 +195,6 @@ export function AnalysisForm() {
           </p>
         </div>
         <div className="flex items-center gap-space-sm self-start md:self-auto shrink-0">
-          <div className="px-space-md py-1.5 rounded-lg bg-surface-container flex items-center gap-2 text-on-surface-variant">
-            <Zap className="h-4 w-4 text-primary" strokeWidth={1.5} aria-hidden="true" />
-            <span className="font-label-sm text-label-sm">
-              Motor Neural <strong>v4.2 Active</strong>
-            </span>
-          </div>
           <button
             type="button"
             onClick={handleClear}

@@ -58,9 +58,6 @@ export function Sidebar({ user, className, onNavigate }: SidebarProps) {
               OpsPilot
             </span>
           </Link>
-          <span className="ml-auto inline-flex items-center px-space-xs py-0.5 rounded text-label-sm font-label-sm uppercase bg-surface-container-highest/20 text-primary-fixed">
-            AI Ops
-          </span>
         </div>
 
         {/* Navigation */}

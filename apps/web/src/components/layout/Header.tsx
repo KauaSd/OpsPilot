@@ -43,14 +43,6 @@ export function Header({ user }: HeaderProps) {
             >
               <Menu className="h-5 w-5" strokeWidth={1.5} aria-hidden="true" />
             </button>
-
-            <span className="inline-flex items-center gap-1.5 px-space-sm py-1 rounded-full bg-surface-container text-on-surface-variant text-label-sm font-label-sm">
-              <span className="h-2 w-2 rounded-full bg-primary-container animate-pulse" />
-              Sistema Operacional:{" "}
-              <strong className="text-on-surface font-semibold">
-                99.9% online
-              </strong>
-            </span>
           </div>
 
           <div className="flex items-center gap-space-md">
