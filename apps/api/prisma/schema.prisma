@@ -1,0 +1,35 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id        String     @id @default(cuid())
+  nome      String
+  email     String     @unique
+  senhaHash String
+  createdAt DateTime   @default(now())
+  analyses  Analysis[]
+}
+
+model Analysis {
+  id         String   @id @default(cuid())
+  userId     String
+  user       User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  relato     String
+  tom        String
+  canal      String
+  resultado  Json
+  meta       Json
+  categoria  String
+  prioridade String
+  createdAt  DateTime @default(now())
+
+  @@index([userId, createdAt])
+  @@index([categoria])
+  @@index([prioridade])
+}
