@@ -4,6 +4,10 @@ import {
   getMockAnalysisById,
   createMockAnalysis,
 } from "@/lib/api/mockData";
+import {
+  categoriaLabelToEnum,
+  toFrontAnalysis,
+} from "@/lib/api/adapters/analysis-adapter";
 
 const COOKIE_NAME = "auth_token";
 
@@ -73,10 +77,25 @@ async function handleProxy(
 
   // 2. REAL BACKEND API PROXY MODE
   try {
-    const targetUrl = new URL(`${apiUrl}/${targetPath}`);
-    // Forward query parameters
+    const isAnalyses =
+      pathSegments[0] === "analises" || pathSegments[0] === "analyses";
+
+    // Rewrite front route (/analises) to back route (/analyses)
+    const backSegments = isAnalyses
+      ? ["analyses", ...pathSegments.slice(1)]
+      : pathSegments;
+    const backPath = backSegments.join("/");
+
+    const targetUrl = new URL(`${apiUrl.replace(/\/$/, "")}/${backPath}`);
     const incomingUrl = new URL(request.url);
     incomingUrl.searchParams.forEach((val, key) => {
+      if (isAnalyses && key === "categoria") {
+        const enumValue = categoriaLabelToEnum(val);
+        if (enumValue) {
+          targetUrl.searchParams.set("categoria", enumValue);
+        }
+        return; // "todas"/desconhecido -> remove o parâmetro
+      }
       targetUrl.searchParams.set(key, val);
     });
 
@@ -101,23 +120,47 @@ async function handleProxy(
     }
 
     const backendRes = await fetch(targetUrl.toString(), init);
-    const responseData = await backendRes.text();
+    const backendContentType = backendRes.headers.get("content-type") || "";
+    const raw = await backendRes.text();
 
-    const forwardHeaders = new Headers();
-    const contentType = backendRes.headers.get("content-type");
-    if (contentType) {
-      forwardHeaders.set("content-type", contentType);
+    // Adapt successful JSON analyses responses to the front contract
+    if (
+      isAnalyses &&
+      backendRes.ok &&
+      backendContentType.includes("application/json")
+    ) {
+      try {
+        const parsed = JSON.parse(raw) as Record<string, unknown>;
+        const isList = method === "GET" && pathSegments.length === 1;
+        const body = isList
+          ? {
+              items: ((parsed.items as unknown[]) ?? []).map((item) =>
+                toFrontAnalysis(item as never)
+              ),
+              total: parsed.total,
+              page: parsed.page,
+              limit: parsed.limit,
+              totalPages: parsed.totalPages,
+            }
+          : toFrontAnalysis(parsed as never);
+        return NextResponse.json(body, { status: backendRes.status });
+      } catch {
+        // cai no fallback abaixo (resposta crua)
+      }
     }
 
-    return new NextResponse(responseData, {
+    return new NextResponse(raw, {
       status: backendRes.status,
-      headers: forwardHeaders,
+      headers: backendContentType
+        ? { "content-type": backendContentType }
+        : undefined,
     });
-  } catch (err: any) {
+  } catch (err: unknown) {
+    const message = err instanceof Error ? err.message : "erro desconhecido";
     return NextResponse.json(
       {
         message: "Falha na comunicação com o backend OpsPilot",
-        error: err.message,
+        error: message,
       },
       { status: 502 }
     );
