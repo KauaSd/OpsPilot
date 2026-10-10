@@ -5,6 +5,7 @@ import { LoggerModule } from "nestjs-pino";
 import { configuration } from "./common/config/configuration";
 import { validateEnv } from "./common/config/env.validation";
 import { AiModule } from "./ai/ai.module";
+import { AnalysesModule } from "./analyses/analyses.module";
 import { AuthModule } from "./auth/auth.module";
 import { HealthModule } from "./health/health.module";
 import { PrismaModule } from "./prisma/prisma.module";
@@ -27,12 +28,12 @@ import { UsersModule } from "./users/users.module";
           remove: true,
         },
         transport:
-          process.env.NODE_ENV === "production"
-            ? undefined
-            : {
+          process.env.NODE_ENV === "development"
+            ? {
                 target: "pino-pretty",
                 options: { singleLine: true, colorize: true },
-              },
+              }
+            : undefined,
       },
     }),
     ThrottlerModule.forRoot([
@@ -42,6 +43,7 @@ import { UsersModule } from "./users/users.module";
     UsersModule,
     AuthModule,
     AiModule,
+    AnalysesModule,
     HealthModule,
   ],
 })

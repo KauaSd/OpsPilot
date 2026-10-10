@@ -1,0 +1,10 @@
+process.env.NODE_ENV = "test";
+process.env.PORT = "3001";
+process.env.DATABASE_URL = "postgresql://test:test@localhost:5432/opspilot_test";
+process.env.JWT_SECRET = "test-secret-key-please-change-1234567890";
+process.env.JWT_EXPIRES_IN = "1d";
+process.env.GROQ_API_KEY = "test-groq-key";
+process.env.GROQ_MODEL = "llama-test";
+process.env.GROQ_TIMEOUT_MS = "5000";
+process.env.PROMPT_VERSION = "v1";
+process.env.WEB_ORIGIN = "http://localhost:3000";
