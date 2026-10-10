@@ -8,6 +8,7 @@ import {
   categoriaLabelToEnum,
   toFrontAnalysis,
 } from "@/lib/api/adapters/analysis-adapter";
+import { resolveApiBase } from "@/lib/api/backend-url";
 
 const COOKIE_NAME = "auth_token";
 
@@ -19,7 +20,7 @@ async function handleProxy(
   const pathSegments = params.path || [];
   const targetPath = pathSegments.join("/");
   const useMocks = process.env.NEXT_PUBLIC_USE_MOCKS === "true";
-  const apiUrl = process.env.API_URL || "http://localhost:3001";
+  const apiUrl = resolveApiBase(process.env.API_URL);
   const token = request.cookies.get(COOKIE_NAME)?.value;
 
   // 1. MOCK SERVER-SIDE MODE

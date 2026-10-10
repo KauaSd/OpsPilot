@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { loginSchema, registerSchema, AuthUser } from "@/lib/schemas/auth";
 import { MOCK_USERS } from "@/lib/api/mockData";
+import { resolveApiBase } from "@/lib/api/backend-url";
 
 const COOKIE_NAME = "auth_token";
 const COOKIE_MAX_AGE = 60 * 60 * 24 * 7; // 7 dias
@@ -36,7 +37,7 @@ export async function POST(
   const { action } = await context.params;
   const endpoint = action?.[0];
   const useMocks = process.env.NEXT_PUBLIC_USE_MOCKS === "true";
-  const apiUrl = process.env.API_URL || "http://localhost:3001";
+  const apiUrl = resolveApiBase(process.env.API_URL);
 
   if (endpoint === "login") {
     try {
@@ -174,7 +175,7 @@ export async function GET(
     }
 
     // Call real API
-    const apiUrl = process.env.API_URL || "http://localhost:3001";
+    const apiUrl = resolveApiBase(process.env.API_URL);
     try {
       const apiRes = await fetch(`${apiUrl}/auth/me`, {
         headers: { Authorization: `Bearer ${token}` },

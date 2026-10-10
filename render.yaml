@@ -37,3 +37,23 @@ services:
         value: v1
       - key: WEB_ORIGIN
         sync: false
+
+  - type: web
+    name: opspilot-web
+    runtime: node
+    plan: free
+    region: oregon
+    branch: main
+    autoDeploy: true
+    buildCommand: corepack enable && pnpm install --frozen-lockfile && pnpm --filter @opspilot/web build
+    startCommand: pnpm --filter @opspilot/web start
+    envVars:
+      - key: NODE_ENV
+        value: production
+      - key: NEXT_PUBLIC_USE_MOCKS
+        value: "false"
+      - key: API_URL
+        fromService:
+          type: web
+          name: opspilot-api
+          property: host

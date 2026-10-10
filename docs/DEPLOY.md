@@ -1,43 +1,49 @@
 # Deploy — OpsPilot
 
-Arquitetura de deploy:
+Deploy **em uma única plataforma**: [Render](https://render.com).
 
-- **API (NestJS + Groq)** → [Render](https://render.com) via `render.yaml` (Web Service Node + Postgres gerenciado).
-- **Web (Next.js)** → [Vercel](https://vercel.com).
+- **API (NestJS + Groq)** → Web Service Node (processo persistente, ideal para chamadas de IA de até 25s).
+- **Web (Next.js)** → Web Service Node (`next start`).
 - **Banco** → Render Postgres (criado pelo blueprint).
 
-O navegador fala apenas com o Vercel (BFF em `/api/proxy` e `/api/auth`). O BFF chama a API
-server-side (server-to-server), então o CORS da API não é exercitado pelo navegador.
+O navegador fala apenas com o Web (BFF em `/api/proxy` e `/api/auth`); o BFF chama a API
+server-side. O `API_URL` do Web é injetado automaticamente pelo blueprint via `fromService`.
 
-## 1. API no Render (Blueprint)
+## Passo a passo (Blueprint)
 
-1. Render Dashboard → **New → Blueprint** → selecione o repositório `KauaSd/OpsPilot`.
+1. Render Dashboard → **New → Blueprint** → conecte o repositório `KauaSd/OpsPilot`.
 2. O Render lê `render.yaml` e provisiona:
    - `opspilot-db` (Postgres free)
-   - `opspilot-api` (Web Service Node)
-3. Preencha as variáveis marcadas `sync: false`:
-   - `GROQ_API_KEY` — chave da Groq (`https://console.groq.com/keys`).
-   - `WEB_ORIGIN` — URL final do Vercel (ex.: `https://opspilot.vercel.app`). Pode preencher depois.
-4. Apply. O build roda `pnpm install && prisma generate && nest build`; o start roda
-   `prisma migrate deploy && node apps/api/dist/main.js`.
-5. Health check: `https://<api>/api/v1/health` deve responder `status: "ok"`.
-6. Swagger: `https://<api>/docs`.
+   - `opspilot-api` (Web Service)
+   - `opspilot-web` (Web Service)
+3. Preencha as variáveis `sync: false` quando solicitado:
+   - `GROQ_API_KEY` (API) — chave da Groq em https://console.groq.com/keys
+   - `WEB_ORIGIN` (API) — URL do serviço **opspilot-web** (ex.: `https://opspilot-web.onrender.com`).
+     Pode preencher depois do primeiro deploy, quando a URL existir.
+4. **Apply**. O Render cria tudo e faz o primeiro deploy.
+5. Verificações:
+   - API: `https://opspilot-api.onrender.com/api/v1/health` → `status: "ok"`.
+   - Swagger: `https://opspilot-api.onrender.com/docs`.
+   - Web: `https://opspilot-web.onrender.com` (login/cadastro funcionando contra a API real).
+6. Se o `WEB_ORIGIN` foi preenchido depois, faça **Manual Deploy** da API para aplicar.
 
-Variáveis (definidas em `render.yaml`): `NODE_ENV`, `DATABASE_URL` (do banco), `JWT_SECRET`
-(gerado), `JWT_EXPIRES_IN`, `GROQ_API_KEY`, `GROQ_MODEL`, `GROQ_TIMEOUT_MS`, `PROMPT_VERSION`,
-`WEB_ORIGIN`.
+### Como o build/start roda
 
-> Observação: o Postgres free do Render expira em 30 dias. Para produção, troque para um plano pago
-> ou use Neon e ajuste `DATABASE_URL`.
+- API: build `pnpm install && prisma generate && nest build`; start `prisma migrate deploy && node apps/api/dist/main.js`.
+- Web: build `pnpm install && next build`; start `next start` (usa a porta `PORT` do Render).
 
-## 2. Web no Vercel
+### Variáveis
 
-1. Vercel → **Add New → Project** → importe `KauaSd/OpsPilot`.
-2. Configure **Root Directory = `apps/web`** (Framework: Next.js, detectado automaticamente).
-3. Environment Variables:
-   - `API_URL` = `https://<api-do-render>/api/v1` (inclui o prefixo da API, **sem** barra final).
-   - `NEXT_PUBLIC_USE_MOCKS` = `false`.
-4. Deploy. Depois copie a URL do Vercel e coloque em `WEB_ORIGIN` na API (Render) e redeploy.
+Definidas em `render.yaml`:
+`NODE_ENV`, `DATABASE_URL` (do banco), `JWT_SECRET` (gerado), `JWT_EXPIRES_IN`, `GROQ_API_KEY`,
+`GROQ_MODEL`, `GROQ_TIMEOUT_MS`, `PROMPT_VERSION`, `WEB_ORIGIN` (API);
+`NEXT_PUBLIC_USE_MOCKS=false`, `API_URL` (do serviço da API) (Web).
+
+> Observações:
+> - Serviços free do Render hibernam após ~15 min ociosos (cold start de ~30s).
+> - O Postgres free expira em 30 dias. Para produção, use plano pago ou Neon e ajuste `DATABASE_URL`.
+> - O modelo `llama-3.3-70b-versatile` está listado como produção, mas há aviso de aposentadoria
+>   circulando; `openai/gpt-oss-120b` é a alternativa sugerida (basta ajustar `GROQ_MODEL`).
 
 ## Rodando localmente
 
