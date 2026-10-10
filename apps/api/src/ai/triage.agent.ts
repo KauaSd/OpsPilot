@@ -94,7 +94,7 @@ export class TriageAgent {
     const res = await this.callGroq(system, user);
     try {
       const json = this.parseJson(res.text);
-      const value = analysisResultSchema.parse(json);
+      const value = analysisResultSchema.parse(this.normalize(json));
       return {
         ok: true,
         value,
@@ -123,6 +123,59 @@ export class TriageAgent {
       t = t.slice(start, end + 1);
     }
     return JSON.parse(t) as unknown;
+  }
+
+  private normalize(raw: unknown): unknown {
+    if (typeof raw !== "object" || raw === null) {
+      return raw;
+    }
+    const obj = raw as Record<string, unknown>;
+    if (!Array.isArray(obj.acoesRecomendadas)) {
+      return obj;
+    }
+    return {
+      ...obj,
+      acoesRecomendadas: obj.acoesRecomendadas.map((item) =>
+        this.normalizeAction(item)
+      ),
+    };
+  }
+
+  private normalizeAction(item: unknown): unknown {
+    if (typeof item === "string") {
+      return { acao: item, responsavelSugerido: "", prazoSugerido: "" };
+    }
+    if (typeof item !== "object" || item === null) {
+      return item;
+    }
+    const o = item as Record<string, unknown>;
+    const pick = (...keys: string[]): string => {
+      for (const key of keys) {
+        const value = o[key];
+        if (typeof value === "string" && value.length > 0) {
+          return value;
+        }
+      }
+      return "";
+    };
+    return {
+      acao: pick(
+        "acao",
+        "ação",
+        "action",
+        "titulo",
+        "título",
+        "descricao",
+        "descrição"
+      ),
+      responsavelSugerido: pick(
+        "responsavelSugerido",
+        "responsavel",
+        "responsável",
+        "owner"
+      ),
+      prazoSugerido: pick("prazoSugerido", "prazo", "deadline"),
+    };
   }
 
   private async callGroq(

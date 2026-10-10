@@ -133,4 +133,47 @@ describe("TriageAgent", () => {
     });
     expect(resultado.riscos.some((r) => /injection/i.test(r))).toBe(true);
   });
+
+  it("normaliza chaves alternativas e remove cercas de markdown", async () => {
+    (groq.complete as jest.Mock).mockResolvedValue({
+      text:
+        "```json\n" +
+        JSON.stringify({
+          ...validResult,
+          acoesRecomendadas: [
+            { titulo: "Reiniciar serviço", responsavel: "Infra", prazo: "Hoje" },
+          ],
+        }) +
+        "\n```",
+      usage: { totalTokens: 10 },
+      model: "llama-test",
+    });
+
+    const { resultado } = await agent.run({ relato: "x".repeat(30) });
+
+    expect(resultado.acoesRecomendadas[0]).toEqual({
+      acao: "Reiniciar serviço",
+      responsavelSugerido: "Infra",
+      prazoSugerido: "Hoje",
+    });
+  });
+
+  it("converte ação em texto simples para objeto", async () => {
+    (groq.complete as jest.Mock).mockResolvedValue({
+      text: JSON.stringify({
+        ...validResult,
+        acoesRecomendadas: ["Reiniciar serviço"],
+      }),
+      usage: { totalTokens: 10 },
+      model: "llama-test",
+    });
+
+    const { resultado } = await agent.run({ relato: "x".repeat(30) });
+
+    expect(resultado.acoesRecomendadas[0]).toEqual({
+      acao: "Reiniciar serviço",
+      responsavelSugerido: "",
+      prazoSugerido: "",
+    });
+  });
 });
