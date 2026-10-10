@@ -68,10 +68,12 @@ export class TriageAgent {
     }
 
     if (!attempt.ok) {
-      this.logger.warn("IA retornou saída inválida após reparo");
+      this.logger.warn(
+        `IA retornou saída inválida após reparo: ${attempt.error}`
+      );
       throw new BadGatewayException({
         code: "AI_UPSTREAM_ERROR",
-        message: "A IA retornou uma resposta inválida",
+        message: `A IA retornou uma resposta inválida (${attempt.error})`,
       });
     }
 
@@ -91,7 +93,7 @@ export class TriageAgent {
   private async attempt(system: string, user: string): Promise<Attempt> {
     const res = await this.callGroq(system, user);
     try {
-      const json = JSON.parse(res.text) as unknown;
+      const json = this.parseJson(res.text);
       const value = analysisResultSchema.parse(json);
       return {
         ok: true,
@@ -107,6 +109,20 @@ export class TriageAgent {
         model: res.model,
       };
     }
+  }
+
+  private parseJson(text: string): unknown {
+    let t = text.trim();
+    const fence = t.match(/```(?:json)?\s*([\s\S]*?)```/i);
+    if (fence) {
+      t = fence[1].trim();
+    }
+    const start = t.indexOf("{");
+    const end = t.lastIndexOf("}");
+    if (start >= 0 && end > start) {
+      t = t.slice(start, end + 1);
+    }
+    return JSON.parse(t) as unknown;
   }
 
   private async callGroq(
@@ -131,7 +147,9 @@ export class TriageAgent {
       if (err instanceof GroqError) {
         throw new BadGatewayException({
           code: "AI_UPSTREAM_ERROR",
-          message: "Falha ao consultar a IA",
+          message: err.detail
+            ? `Falha ao consultar a IA (${err.detail})`
+            : "Falha ao consultar a IA",
         });
       }
       throw err;

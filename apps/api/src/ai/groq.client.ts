@@ -6,7 +6,14 @@ export const DEFAULT_GROQ_MODEL = "openai/gpt-oss-120b";
 
 export class GroqTimeoutError extends Error {}
 export class GroqBusyError extends Error {}
-export class GroqError extends Error {}
+export class GroqError extends Error {
+  detail?: string;
+  constructor(message: string, detail?: string) {
+    super(message);
+    this.name = "GroqError";
+    this.detail = detail;
+  }
+}
 
 export interface GroqCompleteInput {
   system: string;
@@ -93,17 +100,16 @@ export class GroqClient {
       (err as { error?: { message?: string; code?: string } })?.error?.message ??
       (err as { message?: string })?.message ??
       "desconhecido";
+    const detail = `status=${status ?? "?"}: ${upstream}`;
     if (status === 429) {
       return new GroqBusyError("A IA está sobrecarregada");
     }
     if (status !== undefined && status >= 500) {
-      this.logger.warn(`Groq indisponível (status=${status}): ${upstream}`);
-      return new GroqError("Falha temporária na IA");
+      this.logger.warn(`Groq indisponível (${detail})`);
+      return new GroqError("Falha temporária na IA", detail);
     }
-    this.logger.warn(
-      `Groq recusou a requisição (status=${status ?? "?"}): ${upstream}`
-    );
-    return new GroqError("Falha ao consultar a IA");
+    this.logger.warn(`Groq recusou a requisição (${detail})`);
+    return new GroqError("Falha ao consultar a IA", detail);
   }
 
   private delay(ms: number): Promise<void> {
