@@ -13,7 +13,7 @@ services:
     region: oregon
     branch: main
     autoDeploy: true
-    buildCommand: corepack enable && pnpm install --frozen-lockfile && pnpm --filter @opspilot/api exec prisma generate && pnpm --filter @opspilot/api build
+    buildCommand: pnpm install --frozen-lockfile && pnpm --filter @opspilot/api exec prisma generate && pnpm --filter @opspilot/api build
     startCommand: pnpm --filter @opspilot/api exec prisma migrate deploy && node apps/api/dist/main.js
     healthCheckPath: /api/v1/health
     envVars:
@@ -45,7 +45,7 @@ services:
     region: oregon
     branch: main
     autoDeploy: true
-    buildCommand: corepack enable && pnpm install --frozen-lockfile && pnpm --filter @opspilot/web build
+    buildCommand: pnpm install --frozen-lockfile && pnpm --filter @opspilot/web build
     startCommand: pnpm --filter @opspilot/web start
     envVars:
       - key: NODE_ENV
