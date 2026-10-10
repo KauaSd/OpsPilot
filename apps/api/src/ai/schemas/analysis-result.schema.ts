@@ -19,14 +19,24 @@ export const SENTIMENTOS = [
   "muito_negativo",
 ] as const;
 
+export const NIVEIS_RISCO = ["baixo", "medio", "alto", "critico"] as const;
+
 export const categoriaEnum = z.enum(CATEGORIAS);
 export const prioridadeEnum = z.enum(PRIORIDADES);
 export const sentimentoEnum = z.enum(SENTIMENTOS);
+export const nivelRiscoEnum = z.enum(NIVEIS_RISCO);
 
 export const acaoRecomendadaSchema = z.object({
   acao: z.string().min(1),
   responsavelSugerido: z.string(),
   prazoSugerido: z.string(),
+});
+
+export const riscoSchema = z.object({
+  titulo: z.string().min(1).max(120),
+  descricao: z.string().min(1).max(600),
+  nivel: nivelRiscoEnum,
+  impacto: z.string().max(120).default(""),
 });
 
 export const analysisResultSchema = z.object({
@@ -35,7 +45,7 @@ export const analysisResultSchema = z.object({
   prioridade: prioridadeEnum,
   justificativaPrioridade: z.string().min(1),
   sentimento: sentimentoEnum,
-  riscos: z.array(z.string()),
+  riscos: z.array(riscoSchema),
   acoesRecomendadas: z.array(acaoRecomendadaSchema),
   informacoesFaltantes: z.array(z.string()),
   respostaSugerida: z.string(),
@@ -45,3 +55,5 @@ export const analysisResultSchema = z.object({
 
 export type AnalysisResult = z.infer<typeof analysisResultSchema>;
 export type AcaoRecomendada = z.infer<typeof acaoRecomendadaSchema>;
+export type Risco = z.infer<typeof riscoSchema>;
+export type NivelRisco = z.infer<typeof nivelRiscoEnum>;

@@ -16,7 +16,14 @@ const backDto = {
     prioridade: "alta",
     justificativaPrioridade: "Impacto financeiro direto ao cliente",
     sentimento: "negativo",
-    riscos: ["Risco de chargeback"],
+    riscos: [
+      {
+        titulo: "Risco de chargeback",
+        descricao: "Cliente pode contestar a cobrança junto ao banco.",
+        nivel: "alto",
+        impacto: "Perda do valor contestado",
+      },
+    ],
     acoesRecomendadas: [
       {
         acao: "Estornar a cobrança duplicada",
@@ -49,7 +56,14 @@ describe("analysis-adapter", () => {
     expect(front.sentimento).toBe("negativo");
     expect(front.confianca).toBe(83);
     expect(front.requerRevisaoHumana).toBe(true);
-    expect(front.riscosIdentificados).toEqual(["Risco de chargeback"]);
+    expect(front.riscosIdentificados).toEqual([
+      {
+        titulo: "Risco de chargeback",
+        descricao: "Cliente pode contestar a cobrança junto ao banco.",
+        nivel: "alto",
+        impacto: "Perda do valor contestado",
+      },
+    ]);
     expect(front.informacoesFaltantes).toEqual(["ID da transação"]);
     expect(front.respostaSugerida).toBe("Vamos estornar o valor.");
     expect(front.dataCriacao).toBe("2026-01-02T10:00:00.000Z");
@@ -97,6 +111,37 @@ describe("analysis-adapter", () => {
       },
     } as never);
     expect(front.sentimento).toBe("negativo");
+  });
+
+  it("converte riscos legados (string) em objetos estruturados", () => {
+    const front = toFrontAnalysis({
+      ...backDto,
+      resultado: { ...backDto.resultado, riscos: ["Perda de receita"] },
+    } as never);
+    expect(front.riscosIdentificados).toEqual([
+      {
+        titulo: "Perda de receita",
+        descricao: "Perda de receita",
+        nivel: "medio",
+        impacto: "",
+      },
+    ]);
+  });
+
+  it("normaliza nível numérico e chaves desconhecidas de risco", () => {
+    const front = toFrontAnalysis({
+      ...backDto,
+      resultado: {
+        ...backDto.resultado,
+        riscos: [{ titulo: "Churn", descricao: "Cliente vai sair", nivel: "5" }],
+      },
+    } as never);
+    expect(front.riscosIdentificados[0]).toEqual({
+      titulo: "Churn",
+      descricao: "Cliente vai sair",
+      nivel: "critico",
+      impacto: "",
+    });
   });
 
   it("categoria desconhecida passa direto", () => {

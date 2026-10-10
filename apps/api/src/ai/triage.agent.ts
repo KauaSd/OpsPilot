@@ -130,15 +130,81 @@ export class TriageAgent {
       return raw;
     }
     const obj = raw as Record<string, unknown>;
-    if (!Array.isArray(obj.acoesRecomendadas)) {
-      return obj;
-    }
-    return {
-      ...obj,
-      acoesRecomendadas: obj.acoesRecomendadas.map((item) =>
+    const out: Record<string, unknown> = { ...obj };
+    if (Array.isArray(obj.acoesRecomendadas)) {
+      out.acoesRecomendadas = obj.acoesRecomendadas.map((item) =>
         this.normalizeAction(item)
-      ),
+      );
+    }
+    if (Array.isArray(obj.riscos)) {
+      out.riscos = obj.riscos.map((item) => this.normalizeRisco(item));
+    }
+    return out;
+  }
+
+  private normalizeRisco(item: unknown): unknown {
+    if (typeof item === "string") {
+      return { titulo: item, descricao: item, nivel: "medio", impacto: "" };
+    }
+    if (typeof item !== "object" || item === null) {
+      return item;
+    }
+    const o = item as Record<string, unknown>;
+    const text = (...keys: string[]): string => {
+      for (const key of keys) {
+        const value = o[key];
+        if (typeof value === "string" && value.trim().length > 0) {
+          return value.trim();
+        }
+      }
+      return "";
     };
+    const titulo = text("titulo", "título", "risco", "name", "title", "resumo");
+    const descricao = text(
+      "descricao",
+      "descrição",
+      "detail",
+      "detalhe",
+      "details",
+      "texto"
+    );
+    return {
+      titulo: titulo || descricao,
+      descricao: descricao || titulo,
+      nivel: this.normalizeNivel(
+        text("nivel", "nível", "level", "severidade", "severity", "gravidade")
+      ),
+      impacto: text("impacto", "impact", "consequencia", "consequência"),
+    };
+  }
+
+  private normalizeNivel(raw: string): string {
+    const v = raw.toLowerCase().trim();
+    if (!v) {
+      return "medio";
+    }
+    if (
+      ["critico", "crítico", "critical", "muito alto", "muito_alto"].includes(v)
+    ) {
+      return "critico";
+    }
+    if (["alto", "high", "relevante"].includes(v)) {
+      return "alto";
+    }
+    if (["medio", "médio", "medium", "moderado"].includes(v)) {
+      return "medio";
+    }
+    if (["baixo", "low", "menor"].includes(v)) {
+      return "baixo";
+    }
+    const n = Number(v);
+    if (!Number.isNaN(n)) {
+      if (n >= 5) return "critico";
+      if (n >= 4) return "alto";
+      if (n >= 3) return "medio";
+      return "baixo";
+    }
+    return "medio";
   }
 
   private normalizeAction(item: unknown): unknown {
@@ -233,7 +299,9 @@ export class TriageAgent {
     if (!hasInjection(relato)) {
       return resultado;
     }
-    const jaRegistrado = resultado.riscos.some((r) => /instru|injection/i.test(r));
+    const jaRegistrado = resultado.riscos.some((r) =>
+      /instru|injection/i.test(`${r.titulo} ${r.descricao}`)
+    );
     if (jaRegistrado) {
       return resultado;
     }
@@ -241,7 +309,13 @@ export class TriageAgent {
       ...resultado,
       riscos: [
         ...resultado.riscos,
-        "Tentativa de instrução detectada no texto (possível prompt injection)",
+        {
+          titulo: "Tentativa de instrução detectada",
+          descricao:
+            "Possível prompt injection identificado no texto analisado.",
+          nivel: "alto",
+          impacto: "",
+        },
       ],
     };
   }

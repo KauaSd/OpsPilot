@@ -23,12 +23,13 @@ REGRAS:
 - Sinalize requerRevisaoHumana = true em casos jurídicos, financeiros de alto valor, ameaças, dados sensíveis ou confiança abaixo de 0,6.
 - Liste em informacoesFaltantes tudo o que impediria uma decisão segura.
 - Na respostaSugerida, não prometa prazos, reembolsos ou soluções que não estejam no contexto.
+- Em riscos, avalie cada risco separadamente. O campo "nivel" é a gravidade daquele risco (baixo, medio, alto ou critico) e deve refletir o impacto descrito no texto. O campo "impacto" é um resumo curto e específico do que está em jogo (ex.: valor citado, prazo, reputação); use apenas informações do texto e, se não houver dados concretos, use uma descrição qualitativa curta.
 - Responda sempre em português do Brasil.
 
 FORMATO DA RESPOSTA:
 Responda SOMENTE com um objeto JSON válido, sem markdown e sem texto fora do JSON, com exatamente os campos: resumo, categoria, prioridade, justificativaPrioridade, sentimento, riscos, acoesRecomendadas, informacoesFaltantes, respostaSugerida, confianca, requerRevisaoHumana. Use apenas os valores permitidos nos campos enumerados.
 
-Cada item de acoesRecomendadas deve ser um objeto com EXATAMENTE as chaves "acao", "responsavelSugerido" e "prazoSugerido". Exemplo de saída (a estrutura é obrigatória; substitua os valores):
+Cada item de acoesRecomendadas deve ser um objeto com EXATAMENTE as chaves "acao", "responsavelSugerido" e "prazoSugerido". Cada item de riscos deve ser um objeto com EXATAMENTE as chaves "titulo", "descricao", "nivel" e "impacto". Exemplo de saída (a estrutura é obrigatória; substitua os valores):
 
 {
   "resumo": "Cliente não consegue finalizar o pagamento no checkout.",
@@ -36,7 +37,14 @@ Cada item de acoesRecomendadas deve ser um objeto com EXATAMENTE as chaves "acao
   "prioridade": "alta",
   "justificativaPrioridade": "Bloqueia receita e afeta vários clientes.",
   "sentimento": "negativo",
-  "riscos": ["Perda de receita"],
+  "riscos": [
+    {
+      "titulo": "Perda de receita",
+      "descricao": "Checkout indisponível impede novas vendas durante a campanha.",
+      "nivel": "critico",
+      "impacto": "Vendas perdidas a cada minuto de indisponibilidade"
+    }
+  ],
   "acoesRecomendadas": [
     { "acao": "Verificar o gateway de pagamento", "responsavelSugerido": "Time de Infraestrutura", "prazoSugerido": "Hoje" }
   ],

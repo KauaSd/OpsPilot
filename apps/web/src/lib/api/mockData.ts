@@ -55,9 +55,24 @@ export const MOCK_ANALYSES: AnalysisResult[] = [
       "Métricas de latência p99 do banco primário",
     ],
     riscosIdentificados: [
-      "Perda de faturamento direto durante a janela de pico",
-      "Impacto na reputação e churn de clientes B2B",
-      "Sobrecarga dos atendentes de atendimento ao cliente",
+      {
+        titulo: "Perda de faturamento direto",
+        descricao: "Perda de faturamento direto durante a janela de pico.",
+        nivel: "critico",
+        impacto: "Receita perdida por minuto de indisponibilidade",
+      },
+      {
+        titulo: "Impacto na reputação e churn B2B",
+        descricao: "Impacto na reputação e churn de clientes B2B.",
+        nivel: "alto",
+        impacto: "Risco de evasão de clientes corporativos",
+      },
+      {
+        titulo: "Sobrecarga do atendimento",
+        descricao: "Sobrecarga dos atendentes de atendimento ao cliente.",
+        nivel: "medio",
+        impacto: "Fila de suporte acima da capacidade",
+      },
     ],
     respostaSugerida:
       "Olá equipe,\n\nIdentificamos a causa raiz da instabilidade no checkout associada ao deploy v3.4. O procedimento de rollback emergencial já foi acionado junto ao time de SRE. Previsão de normalização em 25 minutos. Manteremos este canal atualizado.",
@@ -108,8 +123,18 @@ export const MOCK_ANALYSES: AnalysisResult[] = [
       "Nome do contato financeiro da Acme Corp",
     ],
     riscosIdentificados: [
-      "Risco iminente de churn de conta corporativa de alto valor",
-      "Contestação bancária (chargeback) com penalidade de taxa",
+      {
+        titulo: "Churn de conta corporativa",
+        descricao: "Risco iminente de churn de conta corporativa de alto valor.",
+        nivel: "critico",
+        impacto: "Perda de contrato de alto valor",
+      },
+      {
+        titulo: "Contestação bancária (chargeback)",
+        descricao: "Contestação bancária (chargeback) com penalidade de taxa.",
+        nivel: "alto",
+        impacto: "Taxa de chargeback e retrabalho financeiro",
+      },
     ],
     respostaSugerida:
       "Prezada equipe Acme Corp,\n\nPedimos sinceras desculpas pelo inconveniente. Confirmamos que uma inconsistência momentânea ocasionou o débito duplicado. O estorno de R$ 14.850,00 já foi processado e segue comprovante em anexo. Como consideração pela confiança, aplicamos um desconto de 10% no ciclo seguinte.",
@@ -151,7 +176,12 @@ export const MOCK_ANALYSES: AnalysisResult[] = [
       "Versão do aplicativo instalada nos coletores físicos",
     ],
     riscosIdentificados: [
-      "Atraso no despacho de remessas diárias para transportadoras",
+      {
+        titulo: "Atraso no despacho de remessas",
+        descricao: "Atraso no despacho de remessas diárias para transportadoras.",
+        nivel: "medio",
+        impacto: "Atraso na cadeia logística",
+      },
     ],
     respostaSugerida:
       "Time CD-01 e CD-03, identificamos lentidão no endpoint de sync. Aplicamos uma otimização no cache central e a latência deve estabilizar nos próximos minutos. Por favor, avisem se o problema persistir.",
@@ -183,7 +213,13 @@ export const MOCK_ANALYSES: AnalysisResult[] = [
     ],
     informacoesFaltantes: [],
     riscosIdentificados: [
-      "Inconformidade em auditoria caso processo não seja registrado no ERP",
+      {
+        titulo: "Inconformidade em auditoria",
+        descricao:
+          "Inconformidade em auditoria caso o processo não seja registrado no ERP.",
+        nivel: "baixo",
+        impacto: "Apontamento de auditoria interna",
+      },
     ],
     respostaSugerida:
       "Prezados, notas fiscais que superam o limite de R$ 50.000,00 requerem validação dupla no ERP (Gerência + Diretoria de TI). O formulário padrão e as instruções estão disponíveis na página de Políticas Internas.",
@@ -322,8 +358,19 @@ export function createMockAnalysis(data: {
       "Timestamp exato do primeiro sintoma percebido",
     ],
     riscosIdentificados: [
-      "Potencial escalada de insatisfação caso a resposta exceda o SLA",
-      "Impacto colateral em fluxos correlatos",
+      {
+        titulo: "Escalada de insatisfação",
+        descricao:
+          "Potencial escalada de insatisfação caso a resposta exceda o SLA.",
+        nivel: "alto",
+        impacto: "Risco à satisfação e retenção",
+      },
+      {
+        titulo: "Impacto colateral em fluxos correlatos",
+        descricao: "Impacto colateral em fluxos correlatos.",
+        nivel: "medio",
+        impacto: "Efeito em processos dependentes",
+      },
     ],
     respostaSugerida:
       data.tom === "formal"

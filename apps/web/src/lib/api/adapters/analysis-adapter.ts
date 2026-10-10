@@ -1,9 +1,21 @@
-import type { AnalysisResult, Sentimento } from "../../schemas/analysis";
+import type {
+  AnalysisResult,
+  NivelRisco,
+  RiscoIdentificado,
+  Sentimento,
+} from "../../schemas/analysis";
 
 export interface BackAcaoRecomendada {
   acao: string;
   responsavelSugerido: string;
   prazoSugerido: string;
+}
+
+export interface BackRisco {
+  titulo?: string;
+  descricao?: string;
+  nivel?: string;
+  impacto?: string;
 }
 
 export interface BackAnalysisResult {
@@ -12,7 +24,8 @@ export interface BackAnalysisResult {
   prioridade: string;
   justificativaPrioridade: string;
   sentimento: string;
-  riscos: string[];
+  // Formato estruturado atual; aceita também o legado (lista de strings).
+  riscos: Array<BackRisco | string>;
   acoesRecomendadas: BackAcaoRecomendada[];
   informacoesFaltantes: string[];
   respostaSugerida: string;
@@ -73,6 +86,49 @@ function mapSentimento(
   return sentimento as Sentimento;
 }
 
+const NIVEIS_RISCO: NivelRisco[] = ["baixo", "medio", "alto", "critico"];
+
+function mapNivelRisco(raw?: string): NivelRisco {
+  const v = (raw ?? "").toLowerCase().trim();
+  if ((NIVEIS_RISCO as string[]).includes(v)) {
+    return v as NivelRisco;
+  }
+  if (["critico", "crítico", "critical", "muito alto", "muito_alto"].includes(v)) {
+    return "critico";
+  }
+  if (["alto", "high", "relevante"].includes(v)) {
+    return "alto";
+  }
+  if (["medio", "médio", "medium", "moderado"].includes(v)) {
+    return "medio";
+  }
+  if (["baixo", "low", "menor"].includes(v)) {
+    return "baixo";
+  }
+  const n = Number(v);
+  if (!Number.isNaN(n) && v !== "") {
+    if (n >= 5) return "critico";
+    if (n >= 4) return "alto";
+    if (n >= 3) return "medio";
+    return "baixo";
+  }
+  return "medio";
+}
+
+export function toFrontRisco(item: BackRisco | string): RiscoIdentificado {
+  if (typeof item === "string") {
+    return { titulo: item, descricao: item, nivel: "medio", impacto: "" };
+  }
+  const titulo = item.titulo ?? item.descricao ?? "";
+  const descricao = item.descricao ?? item.titulo ?? "";
+  return {
+    titulo: titulo || descricao,
+    descricao: descricao || titulo,
+    nivel: mapNivelRisco(item.nivel),
+    impacto: item.impacto ?? "",
+  };
+}
+
 export function toFrontAnalysis(dto: BackAnalysisDto): AnalysisResult {
   const r = dto.resultado;
   return {
@@ -94,7 +150,7 @@ export function toFrontAnalysis(dto: BackAnalysisDto): AnalysisResult {
       prazoSugerido: a.prazoSugerido,
     })),
     informacoesFaltantes: r.informacoesFaltantes,
-    riscosIdentificados: r.riscos,
+    riscosIdentificados: r.riscos.map(toFrontRisco),
     respostaSugerida: r.respostaSugerida,
     dataCriacao: dto.createdAt,
     usuarioId: dto.userId,

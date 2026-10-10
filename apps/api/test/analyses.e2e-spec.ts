@@ -12,7 +12,14 @@ const validResult = {
   prioridade: "alta",
   justificativaPrioridade: "Bloqueia o acesso de usuários ao sistema.",
   sentimento: "negativo",
-  riscos: ["Indisponibilidade para vários usuários"],
+  riscos: [
+    {
+      titulo: "Indisponibilidade para vários usuários",
+      descricao: "Vários usuários não conseguem acessar o sistema.",
+      nivel: "alto",
+      impacto: "",
+    },
+  ],
   acoesRecomendadas: [
     {
       acao: "Verificar serviço de autenticação",

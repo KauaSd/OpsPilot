@@ -12,6 +12,9 @@ export type Prioridade = z.infer<typeof prioridadeEnum>;
 export const sentimentoEnum = z.enum(["positivo", "neutro", "negativo", "urgente"]);
 export type Sentimento = z.infer<typeof sentimentoEnum>;
 
+export const nivelRiscoEnum = z.enum(["baixo", "medio", "alto", "critico"]);
+export type NivelRisco = z.infer<typeof nivelRiscoEnum>;
+
 export const createAnalysisSchema = z.object({
   relato: z
     .string()
@@ -32,6 +35,13 @@ export interface ActionItem {
   prazoSugerido?: string;
 }
 
+export interface RiscoIdentificado {
+  titulo: string;
+  descricao: string;
+  nivel: NivelRisco;
+  impacto?: string;
+}
+
 export interface AnalysisResult {
   id: string;
   relato: string;
@@ -45,7 +55,7 @@ export interface AnalysisResult {
   requerRevisaoHumana: boolean;
   planoDeAcao: ActionItem[];
   informacoesFaltantes: string[];
-  riscosIdentificados: string[];
+  riscosIdentificados: RiscoIdentificado[];
   respostaSugerida: string;
   dataCriacao: string;
   usuarioId: string;
