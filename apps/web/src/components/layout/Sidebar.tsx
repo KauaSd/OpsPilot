@@ -103,7 +103,7 @@ export function Sidebar({ user, className, onNavigate }: SidebarProps) {
           </div>
           <div className="flex-1 min-w-0">
             <p className="font-label-md text-label-md text-inverse-on-surface truncate leading-tight">
-              {user?.nome || "Mariana Silva"}
+              {user?.nome || "Alexandre Santos"}
             </p>
             <p className="font-label-sm text-label-sm text-inverse-on-surface/70 truncate">
               Líder de Operações

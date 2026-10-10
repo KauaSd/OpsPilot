@@ -2,7 +2,7 @@ import { IsEmail, IsString, MaxLength, MinLength } from "class-validator";
 import { ApiProperty } from "@nestjs/swagger";
 
 export class RegisterDto {
-  @ApiProperty({ example: "Mariana Silva", minLength: 2 })
+  @ApiProperty({ example: "Alexandre Santos", minLength: 2 })
   @IsString()
   @MinLength(2, { message: "O nome deve ter no mínimo 2 caracteres" })
   @MaxLength(120)

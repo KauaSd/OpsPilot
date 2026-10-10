@@ -91,7 +91,7 @@ function LoginForm() {
     setEmail("analista@opspilot.ai");
     setSenha("senha123");
     if (mode === "register") {
-      setNome("Mariana Silva");
+      setNome("Alexandre Santos");
     }
     setError(null);
     toast.info("Credenciais de demonstração preenchidas.");
@@ -284,7 +284,7 @@ function LoginForm() {
                       required
                       value={nome}
                       onChange={(e) => setNome(e.target.value)}
-                      placeholder="Ex: Mariana Silva"
+                      placeholder="Ex: Alexandre Santos"
                       className="w-full px-3.5 py-2.5 pr-10 rounded-lg bg-surface-container-low text-on-surface font-body-md text-body-md focus:bg-surface-container-lowest focus:outline-none focus:ring-1 focus:ring-primary-container transition-all"
                     />
                     <Building2
