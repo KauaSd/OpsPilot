@@ -1,5 +1,6 @@
-# docker-compose.yml — ambiente local do OpsPilot (opcional; requer Docker)
-# A produção não usa Docker: web na Vercel, api no Render (nativo), db no Neon.
+# docker-compose.yml — Postgres local para desenvolvimento do OpsPilot (requer Docker).
+# Em produção não usamos Docker: API e Web rodam nativos no Render.
+# Uso: docker compose up -d  ->  Postgres em localhost:5432 (bate com apps/api/.env.example)
 services:
   postgres:
     image: postgres:16-alpine
@@ -18,43 +19,6 @@ services:
       interval: 5s
       timeout: 5s
       retries: 10
-
-  api:
-    build:
-      context: .
-      dockerfile: apps/api/Dockerfile
-    container_name: opspilot-api
-    restart: unless-stopped
-    depends_on:
-      postgres:
-        condition: service_healthy
-    environment:
-      NODE_ENV: production
-      PORT: "3001"
-      DATABASE_URL: postgresql://opspilot:opspilot@postgres:5432/opspilot?schema=public
-      JWT_SECRET: ${JWT_SECRET:-change-me-in-env}
-      JWT_EXPIRES_IN: ${JWT_EXPIRES_IN:-1d}
-      GROQ_API_KEY: ${GROQ_API_KEY:-}
-      GROQ_MODEL: ${GROQ_MODEL:-llama-3.3-70b-versatile}
-      GROQ_TIMEOUT_MS: ${GROQ_TIMEOUT_MS:-25000}
-      PROMPT_VERSION: ${PROMPT_VERSION:-v1}
-      WEB_ORIGIN: ${WEB_ORIGIN:-http://localhost:3000}
-    ports:
-      - "3001:3001"
-
-  web:
-    build:
-      context: .
-      dockerfile: apps/web/Dockerfile
-    container_name: opspilot-web
-    restart: unless-stopped
-    depends_on:
-      - api
-    environment:
-      NEXT_PUBLIC_USE_MOCKS: "false"
-      API_URL: http://api:3001/api/v1
-    ports:
-      - "3000:3000"
 
 volumes:
   opspilot-pgdata:
