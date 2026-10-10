@@ -23,7 +23,7 @@ export function configuration(): { app: AppConfig } {
       jwtSecret: env.JWT_SECRET,
       jwtExpiresIn: env.JWT_EXPIRES_IN ?? "1d",
       groqApiKey: env.GROQ_API_KEY ?? "",
-      groqModel: env.GROQ_MODEL ?? "llama-3.3-70b-versatile",
+      groqModel: env.GROQ_MODEL ?? "openai/gpt-oss-120b",
       groqTimeoutMs: Number(env.GROQ_TIMEOUT_MS ?? 25000),
       promptVersion: env.PROMPT_VERSION ?? "v1",
       webOrigin: env.WEB_ORIGIN ?? "http://localhost:3000",

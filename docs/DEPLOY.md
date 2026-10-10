@@ -42,8 +42,8 @@ Definidas em `render.yaml`:
 > Observações:
 > - Serviços free do Render hibernam após ~15 min ociosos (cold start de ~30s).
 > - O Postgres free expira em 30 dias. Para produção, use plano pago ou Neon e ajuste `DATABASE_URL`.
-> - O modelo `llama-3.3-70b-versatile` está listado como produção, mas há aviso de aposentadoria
->   circulando; `openai/gpt-oss-120b` é a alternativa sugerida (basta ajustar `GROQ_MODEL`).
+> - `llama-3.3-70b-versatile` foi descontinuado pela Groq em 2026-08-16; o default agora é
+>   `openai/gpt-oss-120b`. Dá para trocar sem tocar no código ajustando `GROQ_MODEL`.
 
 ## Rodando localmente
 

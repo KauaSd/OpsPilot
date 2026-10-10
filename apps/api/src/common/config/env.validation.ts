@@ -21,7 +21,7 @@ export const envSchema = z.object({
 
   // Groq (LLM) — a chave vive apenas aqui
   GROQ_API_KEY: z.string().default(""),
-  GROQ_MODEL: z.string().default("llama-3.3-70b-versatile"),
+  GROQ_MODEL: z.string().default("openai/gpt-oss-120b"),
   GROQ_TIMEOUT_MS: z.coerce.number().int().positive().default(25000),
 
   // Prompt / CORS

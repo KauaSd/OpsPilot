@@ -1,6 +1,8 @@
-import { Injectable } from "@nestjs/common";
+import { Injectable, Logger } from "@nestjs/common";
 import { ConfigService } from "@nestjs/config";
 import Groq from "groq-sdk";
+
+export const DEFAULT_GROQ_MODEL = "openai/gpt-oss-120b";
 
 export class GroqTimeoutError extends Error {}
 export class GroqBusyError extends Error {}
@@ -26,13 +28,14 @@ interface ChatCreateResponse {
 
 @Injectable()
 export class GroqClient {
+  private readonly logger = new Logger(GroqClient.name);
   private readonly client: Groq;
   private readonly model: string;
   private readonly timeoutMs: number;
 
   constructor(config: ConfigService) {
     this.client = new Groq({ apiKey: config.get<string>("GROQ_API_KEY") ?? "" });
-    this.model = config.get<string>("GROQ_MODEL") ?? "llama-3.3-70b-versatile";
+    this.model = config.get<string>("GROQ_MODEL") ?? DEFAULT_GROQ_MODEL;
     this.timeoutMs = Number(config.get("GROQ_TIMEOUT_MS") ?? 25000);
   }
 
@@ -86,12 +89,20 @@ export class GroqClient {
 
   private normalize(err: unknown): Error {
     const status = (err as { status?: number })?.status;
+    const upstream =
+      (err as { error?: { message?: string; code?: string } })?.error?.message ??
+      (err as { message?: string })?.message ??
+      "desconhecido";
     if (status === 429) {
       return new GroqBusyError("A IA está sobrecarregada");
     }
     if (status !== undefined && status >= 500) {
+      this.logger.warn(`Groq indisponível (status=${status}): ${upstream}`);
       return new GroqError("Falha temporária na IA");
     }
+    this.logger.warn(
+      `Groq recusou a requisição (status=${status ?? "?"}): ${upstream}`
+    );
     return new GroqError("Falha ao consultar a IA");
   }
 
