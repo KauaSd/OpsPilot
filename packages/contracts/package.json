@@ -1,0 +1,9 @@
+{
+  "name": "@opspilot/contracts",
+  "version": "0.1.0",
+  "private": true,
+  "description": "Contrato OpenAPI gerado a partir do apps/api (NestJS).",
+  "files": [
+    "openapi.json"
+  ]
+}
