@@ -37,6 +37,13 @@ services:
         value: v1
       - key: WEB_ORIGIN
         sync: false
+      # Google OAuth 2.0 (login com Google normal). Crie um OAuth Client
+      # (Web) em console.cloud.google.com e preencha no painel do Render.
+      # redirect URI: https://opspilot-web-2612.onrender.com/api/auth/google/callback
+      - key: GOOGLE_CLIENT_ID
+        sync: false
+      - key: GOOGLE_CLIENT_SECRET
+        sync: false
 
   - type: web
     name: opspilot-web
@@ -57,3 +64,8 @@ services:
       # Se recriar o serviço da API, atualize este valor (ou defina manualmente no painel do Render).
       - key: API_URL
         value: https://opspilot-api-4vmt.onrender.com/api/v1
+      # Google OAuth: client ID (público) usado pelo BFF para iniciar o fluxo.
+      # O Client Secret fica apenas na API. redirect URI:
+      # https://opspilot-web-2612.onrender.com/api/auth/google/callback
+      - key: GOOGLE_CLIENT_ID
+        sync: false

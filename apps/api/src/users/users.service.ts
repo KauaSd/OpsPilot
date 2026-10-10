@@ -5,7 +5,9 @@ import { PrismaService } from "../prisma/prisma.service";
 export interface CreateUserData {
   nome: string;
   email: string;
-  senhaHash: string;
+  senhaHash?: string | null;
+  provider?: string;
+  googleId?: string | null;
 }
 
 @Injectable()
@@ -14,6 +16,10 @@ export class UsersService {
 
   findByEmail(email: string): Promise<User | null> {
     return this.prisma.user.findUnique({ where: { email } });
+  }
+
+  findByGoogleId(googleId: string): Promise<User | null> {
+    return this.prisma.user.findUnique({ where: { googleId } });
   }
 
   findById(id: string): Promise<User | null> {

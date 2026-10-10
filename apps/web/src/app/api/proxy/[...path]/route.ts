@@ -24,7 +24,20 @@ async function handleProxy(
   const apiUrl = resolveApiBase(process.env.API_URL);
   const token = request.cookies.get(COOKIE_NAME)?.value;
 
-  const limit = rateLimit(clientKey(request.headers, "proxy"), 60, 60_000);
+  // IA/análises sempre exige sessão (nem em mock mode) — sem bypass.
+  const isAnalyses =
+    pathSegments[0] === "analises" || pathSegments[0] === "analyses";
+  if (isAnalyses && !token) {
+    return NextResponse.json({ message: "Não autenticado" }, { status: 401 });
+  }
+
+  // POST de análise é a chamada cara de IA: limite mais rígido por IP.
+  const costly = isAnalyses && method === "POST";
+  const limit = rateLimit(
+    clientKey(request.headers, costly ? "proxy:ai" : "proxy"),
+    costly ? 10 : 60,
+    60_000
+  );
   if (!limit.ok) {
     return NextResponse.json(
       { message: "Muitas requisições. Aguarde um instante e tente novamente." },

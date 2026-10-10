@@ -30,7 +30,27 @@ function LoginForm() {
   const [senha, setSenha] = React.useState("");
   const [showPassword, setShowPassword] = React.useState(false);
   const [loading, setLoading] = React.useState(false);
+  const [googleLoading, setGoogleLoading] = React.useState(false);
   const [error, setError] = React.useState<string | null>(null);
+
+  React.useEffect(() => {
+    const googleError = searchParams.get("google");
+    const message = searchParams.get("message");
+    if (googleError) {
+      toast.error(message || "Não foi possível entrar com o Google.");
+    }
+  }, [searchParams]);
+
+  const handleGoogleLogin = async () => {
+    setError(null);
+    setGoogleLoading(true);
+    try {
+      window.location.assign("/api/auth/google");
+    } catch {
+      setGoogleLoading(false);
+      setError("Não foi possível iniciar o login com o Google.");
+    }
+  };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -208,8 +228,9 @@ function LoginForm() {
             <div className="space-y-2.5 mb-5">
               <button
                 type="button"
-                onClick={fillDemoCredentials}
-                className="w-full flex items-center justify-center space-x-3 py-2.5 px-4 rounded-lg bg-surface-container hover:bg-surface-container-high text-on-surface font-label-md text-label-md transition-colors shadow-sm"
+                onClick={handleGoogleLogin}
+                disabled={googleLoading}
+                className="w-full flex items-center justify-center space-x-3 py-2.5 px-4 rounded-lg bg-surface-container hover:bg-surface-container-high text-on-surface font-label-md text-label-md transition-colors shadow-sm disabled:opacity-60 disabled:cursor-not-allowed"
               >
                 <svg className="w-4 h-4" viewBox="0 0 24 24">
                   <path fill="#4285F4" d="M23.745 12.27c0-.7-.06-1.4-.19-2.07H12v4.51h6.6c-.29 1.52-1.14 2.8-2.4 3.65v3.05h3.88c2.27-2.09 3.66-5.17 3.66-9.14z" />
@@ -217,7 +238,9 @@ function LoginForm() {
                   <path fill="#FBBC05" d="M5.28 14.27c-.25-.72-.38-1.49-.38-2.27s.13-1.55.38-2.27V6.58H1.25C.45 8.18 0 9.98 0 12s.45 3.82 1.25 5.42l4.03-3.15z" />
                   <path fill="#EA4335" d="M12 4.75c1.77 0 3.35.61 4.6 1.8l3.42-3.42C17.94 1.19 15.24 0 12 0 7.33 0 3.26 2.64 1.25 6.58l4.03 3.15c.95-2.83 3.6-4.98 6.72-4.98z" />
                 </svg>
-                <span>Entrar com Google Workspace</span>
+                <span>
+                  {googleLoading ? "Redirecionando para o Google..." : "Entrar com Google"}
+                </span>
               </button>
               <button
                 type="button"

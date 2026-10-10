@@ -11,7 +11,9 @@ model User {
   id        String     @id @default(cuid())
   nome      String
   email     String     @unique
-  senhaHash String
+  senhaHash String?
+  provider  String     @default("local")
+  googleId  String?    @unique
   createdAt DateTime   @default(now())
   analyses  Analysis[]
 }
