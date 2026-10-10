@@ -9,6 +9,7 @@ import {
   toFrontAnalysis,
 } from "@/lib/api/adapters/analysis-adapter";
 import { resolveApiBase } from "@/lib/api/backend-url";
+import { clientKey, rateLimit } from "@/lib/api/rate-limit";
 
 const COOKIE_NAME = "auth_token";
 
@@ -22,6 +23,14 @@ async function handleProxy(
   const useMocks = process.env.NEXT_PUBLIC_USE_MOCKS === "true";
   const apiUrl = resolveApiBase(process.env.API_URL);
   const token = request.cookies.get(COOKIE_NAME)?.value;
+
+  const limit = rateLimit(clientKey(request.headers, "proxy"), 60, 60_000);
+  if (!limit.ok) {
+    return NextResponse.json(
+      { message: "Muitas requisições. Aguarde um instante e tente novamente." },
+      { status: 429, headers: { "Retry-After": String(limit.retryAfter) } }
+    );
+  }
 
   // 1. MOCK SERVER-SIDE MODE
   if (useMocks) {

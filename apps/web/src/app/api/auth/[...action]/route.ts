@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { loginSchema, registerSchema, AuthUser } from "@/lib/schemas/auth";
 import { MOCK_USERS } from "@/lib/api/mockData";
 import { resolveApiBase } from "@/lib/api/backend-url";
+import { clientKey, rateLimit } from "@/lib/api/rate-limit";
 
 const COOKIE_NAME = "auth_token";
 const COOKIE_MAX_AGE = 60 * 60 * 24 * 7; // 7 dias
@@ -38,6 +39,16 @@ export async function POST(
   const endpoint = action?.[0];
   const useMocks = process.env.NEXT_PUBLIC_USE_MOCKS === "true";
   const apiUrl = resolveApiBase(process.env.API_URL);
+
+  if (endpoint === "login" || endpoint === "register") {
+    const limit = rateLimit(clientKey(request.headers, `auth:${endpoint}`), 10, 60_000);
+    if (!limit.ok) {
+      return NextResponse.json(
+        { message: "Muitas tentativas. Aguarde um instante e tente novamente." },
+        { status: 429, headers: { "Retry-After": String(limit.retryAfter) } }
+      );
+    }
+  }
 
   if (endpoint === "login") {
     try {

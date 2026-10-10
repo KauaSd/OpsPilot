@@ -231,4 +231,24 @@ describe("OpsPilot API (e2e)", () => {
       .send({ relato: "relato de teste numero extra".padEnd(30, " ") })
       .expect(429);
   });
+
+  it("bloqueia a 6ª credencial no mesmo minuto (429) por e-mail", async () => {
+    const email = `throttle${Date.now()}@opspilot.dev`;
+    await http
+      .post("/api/v1/auth/register")
+      .send({ nome: "Throttle", email, senha: "segredo123" })
+      .expect(201);
+
+    for (let i = 0; i < 5; i += 1) {
+      await http
+        .post("/api/v1/auth/login")
+        .send({ email, senha: "segredo123" })
+        .expect(200);
+    }
+
+    await http
+      .post("/api/v1/auth/login")
+      .send({ email, senha: "segredo123" })
+      .expect(429);
+  });
 });

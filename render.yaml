@@ -52,8 +52,8 @@ services:
         value: production
       - key: NEXT_PUBLIC_USE_MOCKS
         value: "false"
+      # URL pública da API. O BFF chama a API server-side; `fromService property: host`
+      # devolve o host da rede PRIVADA (inválido para HTTPS público), por isso usamos a URL pública.
+      # Se recriar o serviço da API, atualize este valor (ou defina manualmente no painel do Render).
       - key: API_URL
-        fromService:
-          type: web
-          name: opspilot-api
-          property: host
+        value: https://opspilot-api-4vmt.onrender.com/api/v1
